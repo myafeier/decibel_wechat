@@ -6,9 +6,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/chanxuehong/util/security"
-	"github.com/chanxuehong/wechat.v2/mch/core"
-	"github.com/chanxuehong/wechat.v2/mch/pay"
+	"gopkg.in/chanxuehong/wechat.v2/mch/core"
+	"gopkg.in/chanxuehong/wechat.v2/mch/pay"
 	"github.com/go-xorm/xorm"
 	"io"
 	"strconv"
@@ -116,7 +115,7 @@ func (self *WePay) CallBack(request io.Reader,watcher IPayCallbackWatcher) (err 
 		return
 	}
 	wantSign := core.Sign(data, self.config.MerchantSecret, nil)
-	if !security.SecureCompareString(hadSign, wantSign) {
+	if hadSign!=wantSign {
 		err = fmt.Errorf("sign mismatch,\nrequest sign: %s\n want sign: %s", hadSign, wantSign)
 		return
 	}
