@@ -101,5 +101,8 @@ func NewPay(appId string,config *WePayConfig,db *xorm.Session,logger ILogger,)*W
 	pay.AppId = appId
 	pay.logger = logger
 	pay.config = config
+	if logger==nil{
+		pay.logger=NewDefaultLogger()
+	}
 	return pay
 }
