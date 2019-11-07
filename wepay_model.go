@@ -11,8 +11,8 @@ const (
 )
 
 //微信支付订单
-type WePayOrder struct {
-	Id             int       `json:"id"`
+type WePayment struct {
+	Id             int64     `json:"id"`
 	OutTradeNo     string    `json:"out_trade_no" xorm:"varchar(200) default '' index"`
 	Openid         string    `json:"openid" xorm:"varchar(200) default '' index"`
 	NonceStr       string    `json:"nonce_str" xorm:"varchar(200) default ''"`

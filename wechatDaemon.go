@@ -57,7 +57,7 @@ func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer bo
 }
 
 func InitDb(db *xorm.Session) (err error) {
-	var tables = []interface{}{WePayOrder{}}
+	var tables = []interface{}{WePayment{}}
 
 	var isExist bool
 	for _, v := range tables {

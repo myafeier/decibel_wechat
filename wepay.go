@@ -53,7 +53,7 @@ func (self *WePay) UnifiedOrder(userOpenId,orderSn, orderInfo string,localIp str
 		return
 	}
 
-	payInfo:=&WePayOrder{}
+	payInfo:=&WePayment{}
 	payInfo.Stat=WePayStatToPay
 	payInfo.NotifyUrl=reqMap["notify_url"]
 	payInfo.Openid=reqMap["openid"]
@@ -159,7 +159,7 @@ func (self *WePay) CallBack(request io.Reader,watcher IPayCallbackWatcher) (err 
 		return
 	}
 
-	wxOrder:=new(WePayOrder)
+	wxOrder:=new(WePayment)
 	var has bool
 	has,err=self.db.Where("out_trade_no=?",orderSn).Get(wxOrder)
 	if err != nil {
