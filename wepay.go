@@ -180,12 +180,7 @@ func (self *WePay) CallBack(request io.Reader,watcher IPayCallbackWatcher) (err 
 
 	if payStatus{
 
-		wxOrder.Stat=WePayStatPaySuccess
-		wxOrder.TransactionId+=","+transactionId
-		_,err=self.db.ID(wxOrder.Id).Cols("stat,return_code,transaction_id").Update(wxOrder)
-		if err != nil {
-			return
-		}
+
 		err=watcher.OrderPaySuccess(orderSn,orderAmount)
 		if err != nil {
 			self.logger.Error(err)
@@ -193,14 +188,16 @@ func (self *WePay) CallBack(request io.Reader,watcher IPayCallbackWatcher) (err 
 		}else{
 			wxOrder.WatcherResult="success"
 		}
+		wxOrder.Stat=WePayStatPaySuccess
+		wxOrder.TransactionId+=","+transactionId
+		_,err=self.db.ID(wxOrder.Id).Cols("stat,return_code,transaction_id,watcher_result").Update(wxOrder)
+		if err != nil {
+			return
+		}
 
 
 	}else{
-		wxOrder.Stat=WePayStatPayFail
-		wxOrder.ReturnCode=data["err_code"]+"|"+data["err_code_des"]
-		self.logger.Info(data)
 
-		_,err=self.db.ID(wxOrder.Id).Cols("stat,return_code").Update(wxOrder)
 
 		err=watcher.OrderPayFail(orderSn,orderAmount)
 		if err != nil {
@@ -209,13 +206,14 @@ func (self *WePay) CallBack(request io.Reader,watcher IPayCallbackWatcher) (err 
 		}else{
 			wxOrder.WatcherResult="success"
 		}
+		wxOrder.Stat=WePayStatPayFail
+		wxOrder.ReturnCode=data["err_code"]+"|"+data["err_code_des"]
+		self.logger.Info(data)
+
+		_,err=self.db.ID(wxOrder.Id).Cols("stat,return_code,watcher_result").Update(wxOrder)
 
 	}
 
-	_,err=self.db.ID(wxOrder.Id).Cols("watcher_result").Update(wxOrder)
-	if err != nil {
-		return
-	}
 	return
 }
 
