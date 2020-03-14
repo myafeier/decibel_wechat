@@ -1,4 +1,4 @@
-module github.com/myafeier/decibel_wechat
+module github.com/myafeier/wechat
 
 go 1.13
 

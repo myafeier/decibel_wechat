@@ -1,4 +1,4 @@
-package decibel_wechat
+package wechat
 
 type Config struct {
 	*WeChatMicroAppConfig

@@ -1,4 +1,4 @@
-package decibel_wechat
+package wechat
 
 import (
 	"github.com/go-xorm/xorm"

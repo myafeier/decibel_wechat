@@ -1,4 +1,4 @@
-package decibel_wechat
+package wechat
 
 type ILogger interface {
 	Debug(...interface{})

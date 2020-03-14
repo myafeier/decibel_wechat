@@ -1,4 +1,4 @@
-package decibel_wechat
+package wechat
 
 import "gopkg.in/chanxuehong/wechat.v2/mp/core"
 

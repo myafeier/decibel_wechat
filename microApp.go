@@ -1,4 +1,4 @@
-package decibel_wechat
+package wechat
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ type Session struct {
 	UnionID    string `json:"unionid,omitempty"` //用户在开放平台的唯一标识符。本字段在满足一定条件的情况下才返回。具体参看UnionID机制说明
 }
 
-func GetMicroAppSession(code string)(session *Session,err error){
+func GetMicroAppSession(code string) (session *Session, err error) {
 	url := SESSION_SERVER_URL + "appid=" + Daemon.Config.WeChatMicroAppConfig.AppId + "&secret=" + Daemon.Config.WeChatMicroAppConfig.Secret + "&js_code=" + code + "&grant_type=authorization_code"
 	Daemon.Logger.Debug("GetUrl:", url)
 	client := new(http.Client)
@@ -33,7 +33,7 @@ func GetMicroAppSession(code string)(session *Session,err error){
 	}
 
 	if response.StatusCode != 200 {
-		err = errors.New(fmt.Sprintf("response code:%d,body:%s", response.StatusCode,body))
+		err = errors.New(fmt.Sprintf("response code:%d,body:%s", response.StatusCode, body))
 		return nil, err
 	}
 

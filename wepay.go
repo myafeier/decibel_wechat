@@ -1,5 +1,5 @@
 // 微信支付
-package decibel_wechat
+package wechat
 
 import (
 	"crypto/md5"
