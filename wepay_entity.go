@@ -26,7 +26,7 @@ type WePaymentEntity struct {
 	Openid         string      `json:"openid" xorm:"varchar(200) default '' index"`
 	NonceStr       string      `json:"nonce_str" xorm:"varchar(200) default ''"`
 	Body           string      `json:"body" xorm:"varchar(200) default ''"`
-	TotalFee       int         `json:"total_fee" xorm:"int(11) default 0"`
+	TotalFee       int64       `json:"total_fee" xorm:"int(11) default 0"`
 	SpbillCreateIp string      `json:"spbill_create_ip" xorm:"varchar(200) default ''"`
 	NotifyUrl      string      `json:"notify_url" xorm:"varchar(200) default ''"`
 	TradeType      string      `json:"trade_type" xorm:"varchar(200) default ''"`

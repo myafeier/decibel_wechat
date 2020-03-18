@@ -26,7 +26,7 @@ type WePayService struct {
 }
 
 //原生支付统一下单
-func (self *WePayService) UnifiedOrder_Native(orderSource OrderSource, sourceId int64, orderInfo string, amount int) (codeUrl string, err error) {
+func (self *WePayService) UnifiedOrder_Native(orderSource OrderSource, sourceId int64, orderInfo string, amount int64) (codeUrl string, err error) {
 	tradeType := "NATIVE"
 	reqMap := make(map[string]string)
 	reqMap["body"] = orderInfo
@@ -80,7 +80,7 @@ func (self *WePayService) UnifiedOrder_Native(orderSource OrderSource, sourceId 
 }
 
 // 统一下单，返回再次签名的json数据,注意
-func (self *WePayService) UnifiedOrder_JSAPI(userOpenId, orderSn, orderInfo string, localIp string, amount int) (jsonByte []byte, err error) {
+func (self *WePayService) UnifiedOrder_JSAPI(userOpenId, orderSn, orderInfo string, localIp string, amount int64) (jsonByte []byte, err error) {
 	tradeType := "JSAPI"
 	nonceStr := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s%d", orderSn, time.Now().Unix()))))
 	reqMap := make(map[string]string)
@@ -130,7 +130,7 @@ func (self *WePayService) UnifiedOrder_JSAPI(userOpenId, orderSn, orderInfo stri
 	return self.signAgain(payInfo.NonceStr, payInfo.PrepayId, amount)
 }
 
-func (self *WePayService) signAgain(nonceStr, prepayId string, amount int) (signInfo []byte, err error) {
+func (self *WePayService) signAgain(nonceStr, prepayId string, amount int64) (signInfo []byte, err error) {
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	packageStr := fmt.Sprintf("prepay_id=%s", prepayId)
 	signType := "MD5"
@@ -260,7 +260,7 @@ func (self *WePayService) CallBack(request io.Reader) (err error) {
 
 	} else {
 
-		err = self.Watchers[wxOrder.OrderSource].OrderPayFail(orderSn, orderAmount)
+		err = self.Watchers[wxOrder.OrderSource].OrderPayFail(wxOrder.SourceId, orderAmount)
 		if err != nil {
 			self.logger.Error(err)
 			wxOrder.WatcherResult = err.Error()

@@ -12,5 +12,5 @@ type IPayCallbackWatcher interface {
 	OrderPaySuccess(sourceId int64, Amount int) error
 
 	//支付失败
-	OrderPayFail(orderSn string, Amount int) error
+	OrderPayFail(sourceId int64, Amount int) error
 }
