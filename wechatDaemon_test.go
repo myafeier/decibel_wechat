@@ -32,7 +32,7 @@ func init() {
 			NotifyUrl:      "https://pay.u1200.com",
 		},
 	}
-	InitWeChatDaemon(true, true, nil, LocalDb, config)
+	InitWeChatDaemon(true, true, true, nil, LocalDb, config)
 }
 
 func TestGetMicroAppSession(t *testing.T) {

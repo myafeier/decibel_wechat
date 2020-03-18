@@ -9,8 +9,8 @@ type ILogger interface {
 // 订单支付
 type IPayCallbackWatcher interface {
 	//支付成功
-	OrderPaySuccess(sourceId int64, Amount int) error
+	OrderPaySuccess(sourceId int64, Amount int64) error
 
 	//支付失败
-	OrderPayFail(sourceId int64, Amount int) error
+	OrderPayFail(sourceId int64, Amount int64) error
 }

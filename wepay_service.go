@@ -153,6 +153,11 @@ func (self *WePayService) signAgain(nonceStr, prepayId string, amount int64) (si
 }
 
 func (self *WePayService) RegistWatcher(os OrderSource, watcher IPayCallbackWatcher) {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+	if self.Watchers == nil {
+		self.Watchers = make(map[OrderSource]IPayCallbackWatcher)
+	}
 	self.Watchers[os] = watcher
 }
 
@@ -180,7 +185,7 @@ func (self *WePayService) CallBack(request io.Reader) (err error) {
 		return
 	}
 	var orderSn, transactionId string
-	var orderAmount int
+	var orderAmount int64
 	var payStatus bool
 
 	switch data["result_code"] {
@@ -200,7 +205,7 @@ func (self *WePayService) CallBack(request io.Reader) (err error) {
 			err = fmt.Errorf("request without total_fee")
 			return
 		}
-		orderAmount, err = strconv.Atoi(totalFee)
+		orderAmount, err = strconv.ParseInt(totalFee, 10, 64)
 		if err != nil {
 			return
 		}
