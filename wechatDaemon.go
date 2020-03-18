@@ -8,14 +8,15 @@ import (
 var Daemon *WeChatDaemon
 
 type WeChatDaemon struct {
-	Config            *Config
-	Logger            ILogger
-	Engine            *xorm.Engine
-	AccessTokenServer *core.DefaultAccessTokenServer
-	CallbackServer    *core.Server
+	Config              *Config
+	Logger              ILogger
+	Engine              *xorm.Engine
+	AccessTokenServer   *core.DefaultAccessTokenServer
+	CallbackServer      *core.Server
+	DefaultWepayService *WePayService
 }
 
-func InitWeChatDaemon(initAccessTokenServer, initCallBackServer bool, logger ILogger, dbEngine *xorm.Engine, config *Config) {
+func InitWeChatDaemon(initAccessTokenServer, initCallBackServer, initDefaultWepayService bool, logger ILogger, dbEngine *xorm.Engine, config *Config) {
 
 	if Daemon == nil {
 		Daemon = new(WeChatDaemon)
@@ -27,13 +28,13 @@ func InitWeChatDaemon(initAccessTokenServer, initCallBackServer bool, logger ILo
 	} else {
 		Daemon.Logger = logger
 	}
-	err := Daemon.Init(initAccessTokenServer, initCallBackServer)
+	err := Daemon.Init(initAccessTokenServer, initCallBackServer, initDefaultWepayService)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer bool) (err error) {
+func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer, initDefaultWepayService bool) (err error) {
 	err = InitDb(self.Engine.NewSession())
 	if err != nil {
 		self.Logger.Error(err)
@@ -53,11 +54,18 @@ func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer bo
 		self.CallbackServer = core.NewServer(self.Config.OriginId, self.Config.AppId, self.Config.Secret, self.Config.Base64AESKey, mux, nil)
 	}
 
+	if initDefaultWepayService {
+		self.DefaultWepayService = new(WePayService)
+		self.DefaultWepayService.db = self.Engine.NewSession()
+		self.DefaultWepayService.AppId = self.Config.WeChatMicroAppConfig.AppId
+		self.DefaultWepayService.logger = self.Logger
+		self.DefaultWepayService.config = self.Config.WePayConfig
+	}
 	return
 }
 
 func InitDb(db *xorm.Session) (err error) {
-	var tables = []interface{}{WePayment{}}
+	var tables = []interface{}{&WePaymentEntity{}, &WxUserEntity{}}
 
 	var isExist bool
 	for _, v := range tables {
@@ -85,24 +93,11 @@ func InitDb(db *xorm.Session) (err error) {
 }
 
 //得到支付接口
-func (self *WeChatDaemon) NewPay() *WePay {
-	pay := new(WePay)
+func (self *WeChatDaemon) NewPay() *WePayService {
+	pay := new(WePayService)
 	pay.db = self.Engine.NewSession()
 	pay.AppId = self.Config.WeChatMicroAppConfig.AppId
 	pay.logger = self.Logger
 	pay.config = self.Config.WePayConfig
-	return pay
-}
-
-//直接调用Pay
-func NewPay(appId string,config *WePayConfig,db *xorm.Session,logger ILogger,)*WePay{
-	pay := new(WePay)
-	pay.db = db
-	pay.AppId = appId
-	pay.logger = logger
-	pay.config = config
-	if logger==nil{
-		pay.logger=NewDefaultLogger()
-	}
 	return pay
 }

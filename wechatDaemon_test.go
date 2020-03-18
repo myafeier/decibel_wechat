@@ -1,8 +1,8 @@
 package wechat
 
 import (
-	goxorm	"github.com/go-xorm/xorm"
 	_ "github.com/go-sql-driver/mysql"
+	goxorm "github.com/go-xorm/xorm"
 	"log"
 	"testing"
 	"time"
@@ -19,36 +19,44 @@ func init() {
 	LocalDb.SetConnMaxLifetime(100 * time.Second)
 	LocalDb.ShowSQL(true)
 
-	config:=&Config{
+	config := &Config{
 		&WeChatMicroAppConfig{
-			OriginId:"",
-			AppId:"",
-			Secret:"",
-			Base64AESKey:"",
+			OriginId:     "",
+			AppId:        "wx884199c1f98151f3",
+			Secret:       "8119bb3228e1b80705f94971551301f7",
+			Base64AESKey: "",
 		},
 		&WePayConfig{
-			MerchantId:"",
-			MerchantSecret:"",
-			NotifyUrl:"",
+			MerchantId:     "1577820171",
+			MerchantSecret: "Uydh7635ysgh89ikojs63526352fhjdk",
+			NotifyUrl:      "https://pay.u1200.com",
 		},
 	}
-	InitWeChatDaemon(true,true,nil,LocalDb,config)
+	InitWeChatDaemon(true, true, nil, LocalDb, config)
 }
 
 func TestGetMicroAppSession(t *testing.T) {
 
-	session,err:=GetMicroAppSession("test")
+	session, err := GetMicroAppSession("test")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("%+v",*session)
+	t.Logf("%+v", *session)
 }
 
-func TestWePay_UnifiedOrder(t *testing.T) {
+func TestWePay_UnifiedOrderJSAPI(t *testing.T) {
 
-	payData,err:=Daemon.NewPay().UnifiedOrder("test","testorder","testinfo","127.0.0.1",1)
+	payData, err := Daemon.NewPay().UnifiedOrder_JSAPI("test", "testorder", "testinfo", "127.0.0.1", 1)
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("%s",payData)
+	t.Logf("%s", payData)
+}
+
+func TestWePay_UnifiedOrderNative(t *testing.T) {
+	payUrl, err := Daemon.NewPay().UnifiedOrder_Native(OrderSourceOfMerchantRecharge, 1, "info", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("payUrl: %s \n", payUrl)
 }
