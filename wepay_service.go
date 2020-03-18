@@ -27,6 +27,8 @@ type WePayService struct {
 
 //原生支付统一下单
 func (self *WePayService) UnifiedOrder_Native(orderSource OrderSource, sourceId int64, orderInfo string, amount int64) (codeUrl string, err error) {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
 	tradeType := "NATIVE"
 	reqMap := make(map[string]string)
 	reqMap["body"] = orderInfo
@@ -38,7 +40,7 @@ func (self *WePayService) UnifiedOrder_Native(orderSource OrderSource, sourceId 
 	reqMap["sign_type"] = "MD5"
 	reqMap["nonce_str"] = fmt.Sprintf("%X", md5.Sum([]byte(fmt.Sprintf("%s%d", reqMap["out_trade_no"], time.Now().Nanosecond()))))
 	self.logger.Debug(reqMap)
-
+	self.logger.Debug("%s,%s,%s", self.AppId, self.config.MerchantId, self.config.MerchantSecret)
 	client := core.NewClient(self.AppId, self.config.MerchantId, self.config.MerchantSecret, nil)
 	response, err := pay.UnifiedOrder(client, reqMap)
 	if err != nil {
@@ -174,9 +176,13 @@ func (self *WePayService) CallBack(request io.Reader) (err error) {
 		}
 	}()
 	data, err := decodeXMLToMap(request)
+	if err != nil {
+		return
+	}
 
 	hadSign, ok := data["sign"]
 	if !ok {
+		err = fmt.Errorf("sign empty")
 		return
 	}
 	wantSign := core.Sign(data, self.config.MerchantSecret, nil)
