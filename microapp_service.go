@@ -1,12 +1,63 @@
 package wechat
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"gopkg.in/chanxuehong/wechat.v2/mp/core"
 )
+
+type MicroappService struct {
+	AccessTokenServer *core.DefaultAccessTokenServer
+	WeChatMicroAppConfig
+}
+
+var MicroappDaemon *MicroappService
+
+//单例模式
+func NewMicroappDaemon(config *WeChatMicroAppConfig) *MicroappService {
+	if MicroappDaemon != nil {
+		return MicroappDaemon
+	}
+	MicroappDaemon = new(MicroappService)
+	MicroappDaemon.WeChatMicroAppConfig = *config
+	MicroappDaemon.AccessTokenServer = core.NewDefaultAccessTokenServer(config.AppId, config.Secret, nil)
+	return MicroappDaemon
+}
+
+type WxappCodeRequest struct {
+	Scene string `json:"scene"`
+	Page  string `json:"page"`
+	Width int    `json:"width"`
+}
+
+func (m *MicroappService) GenerateWxappCode(page, scene string, width int) (code []byte, err error) {
+	token, err := m.AccessTokenServer.Token()
+	if err != nil {
+		return
+	}
+	req := new(WxappCodeRequest)
+	req.Scene = scene
+	req.Page = page
+	req.Width = width
+	data, err := json.Marshal(req)
+	if err != nil {
+		return
+	}
+	buf := bytes.NewBuffer(data)
+	resp, err := http.Post("https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="+token, "application/json;charset=utf-8", buf)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	code, err = ioutil.ReadAll(resp.Body)
+	return
+
+}
 
 const SESSION_SERVER_URL = "https://api.weixin.qq.com/sns/jscode2session?"
 

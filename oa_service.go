@@ -15,6 +15,7 @@ func (s *WxUserService) InsertOrUpdateUser(user *WxUserEntity) error {
 	if has, err := s.session.Where("open_id=?", user.OpenId).Get(exist); err != nil {
 		return err
 	} else if has {
+		user.Id = exist.Id
 		if _, err := s.session.ID(exist.Id).Update(user); err != nil {
 			return err
 		}

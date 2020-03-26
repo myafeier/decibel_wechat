@@ -22,7 +22,7 @@ type WePaymentEntity struct {
 	Id             int64       `json:"id"`
 	OrderSource    OrderSource `json:"order_source" xorm:"tinyint(2) default 0 index"` //订单来源
 	SourceId       int64       `json:"source_id" xorm:"default 0 index"`               //订单来源ID
-	OutTradeNo     string      `json:"out_trade_no" xorm:"varchar(200) default '' index"`
+	OutTradeNo     string      `json:"out_trade_no" xorm:"varchar(200) default '' unique"`
 	Openid         string      `json:"openid" xorm:"varchar(200) default '' index"`
 	NonceStr       string      `json:"nonce_str" xorm:"varchar(200) default ''"`
 	Body           string      `json:"body" xorm:"varchar(200) default ''"`
