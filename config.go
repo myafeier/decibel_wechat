@@ -3,6 +3,7 @@ package wechat
 type Config struct {
 	*WeChatMicroAppConfig
 	*WePayConfig
+	*WePayVendorConfig
 }
 
 type WeChatMicroAppConfig struct {
@@ -16,4 +17,9 @@ type WePayConfig struct {
 	MerchantId     string //商户id
 	MerchantSecret string //商户
 	NotifyUrl      string //回调地址
+}
+type WePayVendorConfig struct {
+	AppId          string //服务商appId
+	MerchantId     string //商户id
+	MerchantSecret string //商户
 }

@@ -51,7 +51,7 @@ func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer, i
 	}
 
 	if initCallBackServer {
-		self.CallbackServer = core.NewServer(self.Config.OriginId, self.Config.AppId, self.Config.Secret, self.Config.Base64AESKey, mux, nil)
+		self.CallbackServer = core.NewServer(self.Config.OriginId, self.Config.WeChatMicroAppConfig.AppId, self.Config.Secret, self.Config.Base64AESKey, mux, nil)
 	}
 
 	if initDefaultWepayService {
@@ -60,6 +60,9 @@ func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer, i
 		self.DefaultWepayService.AppId = self.Config.WeChatMicroAppConfig.AppId
 		self.DefaultWepayService.logger = self.Logger
 		self.DefaultWepayService.config = self.Config.WePayConfig
+		if self.Config.WePayVendorConfig != nil {
+			self.DefaultWepayService.vendor = self.Config.WePayVendorConfig
+		}
 	}
 	return
 }
@@ -99,5 +102,6 @@ func (self *WeChatDaemon) NewPay() *WePayService {
 	pay.AppId = self.Config.WeChatMicroAppConfig.AppId
 	pay.logger = self.Logger
 	pay.config = self.Config.WePayConfig
+	pay.vendor = self.Config.WePayVendorConfig
 	return pay
 }

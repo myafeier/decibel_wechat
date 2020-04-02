@@ -19,6 +19,7 @@ import (
 type WePayService struct {
 	AppId    string
 	config   *WePayConfig
+	vendor   *WePayVendorConfig
 	db       *xorm.Session
 	logger   ILogger
 	mutex    sync.Mutex
@@ -41,7 +42,12 @@ func (self *WePayService) UnifiedOrder_Native(orderSource OrderSource, sourceId 
 	reqMap["nonce_str"] = fmt.Sprintf("%X", md5.Sum([]byte(fmt.Sprintf("%s%d", reqMap["out_trade_no"], time.Now().Nanosecond()))))
 	self.logger.Debug(reqMap)
 	self.logger.Debug("%s,%s,%s", self.AppId, self.config.MerchantId, self.config.MerchantSecret)
-	client := core.NewClient(self.AppId, self.config.MerchantId, self.config.MerchantSecret, nil)
+	var client *core.Client
+	if self.vendor == nil {
+		client = core.NewClient(self.AppId, self.config.MerchantId, self.config.MerchantSecret, nil)
+	} else {
+		client = core.NewSubMchClient(self.vendor.AppId, self.vendor.MerchantId, self.vendor.MerchantSecret, self.AppId, self.config.MerchantId, nil)
+	}
 	response, err := pay.UnifiedOrder(client, reqMap)
 	if err != nil {
 		self.logger.Error(err)
@@ -185,9 +191,16 @@ func (self *WePayService) CallBack(request io.Reader) (err error) {
 		err = fmt.Errorf("sign empty")
 		return
 	}
-	wantSign := core.Sign(data, self.config.MerchantSecret, nil)
+
+	var secret string
+	if self.vendor != nil {
+		secret = self.vendor.MerchantSecret
+	} else {
+		secret = self.config.MerchantSecret
+	}
+	wantSign := core.Sign(data, secret, nil)
 	if hadSign != wantSign {
-		err = fmt.Errorf("sign mismatch,\nrequest sign: %s\n want sign: %s", hadSign, wantSign)
+		err = fmt.Errorf("sign mismatch,\nrequest sign: %s\n want sign: %s,requeData: %+v ", hadSign, wantSign, data)
 		return
 	}
 	var orderSn, transactionId string

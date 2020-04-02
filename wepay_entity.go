@@ -14,7 +14,7 @@ const (
 )
 
 const (
-	OrderSourceOfMerchantRecharge = 1 //商户充值订单
+	OrderSourceOfMerchantRecharge OrderSource = 1 //商户充值订单
 )
 
 //微信支付订单

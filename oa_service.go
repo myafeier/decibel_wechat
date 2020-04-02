@@ -9,6 +9,11 @@ type WxUserService struct {
 func NewWxUserService(session *xorm.Session) *WxUserService {
 	return &WxUserService{session: session}
 }
+func (s *WxUserService) GetOne(id int64) (user *WxUserEntity, has bool, err error) {
+	user = new(WxUserEntity)
+	has, err = s.session.ID(id).Get(user)
+	return
+}
 
 func (s *WxUserService) InsertOrUpdateUser(user *WxUserEntity) error {
 	exist := new(WxUserEntity)

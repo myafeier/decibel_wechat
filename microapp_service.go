@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gopkg.in/chanxuehong/wechat.v2/mp/core"
 	"io/ioutil"
 	"net/http"
-
-	"gopkg.in/chanxuehong/wechat.v2/mp/core"
 )
 
 type MicroappService struct {
@@ -48,6 +47,7 @@ func (m *MicroappService) GenerateWxappCode(page, scene string, width int) (code
 	if err != nil {
 		return
 	}
+	fmt.Printf("%s", data)
 	buf := bytes.NewBuffer(data)
 	resp, err := http.Post("https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="+token, "application/json;charset=utf-8", buf)
 	if err != nil {
