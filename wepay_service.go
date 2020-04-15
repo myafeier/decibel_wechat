@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/go-xorm/xorm"
 	"gopkg.in/chanxuehong/wechat.v2/mch/core"
 	"gopkg.in/chanxuehong/wechat.v2/mch/pay"
 	"io"
@@ -14,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"xorm.io/xorm"
 )
 
 type WePayService struct {

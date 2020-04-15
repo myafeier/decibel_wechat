@@ -1,8 +1,8 @@
 package wechat
 
 import (
-	"github.com/go-xorm/xorm"
 	"gopkg.in/chanxuehong/wechat.v2/mp/core"
+	"xorm.io/xorm"
 )
 
 var Daemon *WeChatDaemon

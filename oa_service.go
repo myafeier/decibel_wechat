@@ -1,6 +1,6 @@
 package wechat
 
-import "github.com/go-xorm/xorm"
+import "xorm.io/xorm"
 
 type WxUserService struct {
 	session *xorm.Session

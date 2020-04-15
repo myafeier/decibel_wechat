@@ -9,4 +9,5 @@ require (
 	github.com/go-xorm/xorm v0.7.7
 	github.com/qiniu/x v7.0.8+incompatible
 	gopkg.in/chanxuehong/wechat.v2 v2.0.0-20190402080805-fa408c6cc20d
+	xorm.io/xorm v1.0.1
 )
