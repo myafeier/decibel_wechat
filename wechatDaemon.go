@@ -105,3 +105,9 @@ func (self *WeChatDaemon) NewPay() *WePayService {
 	pay.vendor = self.Config.WePayVendorConfig
 	return pay
 }
+func (self *WeChatDaemon) NewNotifyService() *WxNotifyService {
+	ms := new(WxNotifyService)
+	ms.AccessTokenServer = self.AccessTokenServer
+	ms.Config = self.Config.WeChatMicroAppConfig
+	return ms
+}

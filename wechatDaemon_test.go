@@ -2,10 +2,10 @@ package wechat
 
 import (
 	_ "github.com/go-sql-driver/mysql"
-	goxorm "github.com/go-xorm/xorm"
 	"log"
 	"testing"
 	"time"
+	goxorm "xorm.io/xorm"
 )
 
 func init() {
@@ -31,6 +31,7 @@ func init() {
 			MerchantSecret: "Uydh7635ysgh89ikojs63526352fhjdk",
 			NotifyUrl:      "https://pay.u1200.com",
 		},
+		&WePayVendorConfig{},
 	}
 	InitWeChatDaemon(true, true, true, nil, LocalDb, config)
 }
@@ -59,4 +60,28 @@ func TestWePay_UnifiedOrderNative(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("payUrl: %s \n", payUrl)
+}
+
+func TestSendSubscribeMsg(t *testing.T) {
+	ms := Daemon.NewNotifyService()
+	openId := "oSWz25VYk9p5iYGdybEoC8BfHo2k"
+	msg := &SubscribeMsg{
+		TemplateId: "fTlB0J83PtcS5DsfpIjfIAj0Oir6sfV_KOOGQ1UyZME",
+		Page:       "/pages/index/index",
+		Data: &struct {
+			No      map[string]string `json:"character_string2.DATA"`
+			Addtion map[string]string `json:"thing1.DATA"`
+			Remark  map[string]string `json:"thing8.DATA"`
+		}{
+			No:      map[string]string{"value": "test"},
+			Addtion: map[string]string{"value": "test"},
+			Remark:  map[string]string{"value": "test"},
+		},
+	}
+
+	err := ms.SendSubscribeMsg(openId, msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 }

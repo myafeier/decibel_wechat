@@ -87,6 +87,7 @@ func GetMicroAppSession(code string) (session *Session, err error) {
 		err = errors.New(fmt.Sprintf("response code:%d,body:%s", response.StatusCode, body))
 		return nil, err
 	}
+	Daemon.Logger.Debug("respBody:", string(body))
 
 	session = new(Session)
 	err = json.Unmarshal(body, session)
