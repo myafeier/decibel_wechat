@@ -2,16 +2,17 @@ package wechat
 
 import (
 	_ "github.com/go-sql-driver/mysql"
-	"log"
+	"github.com/myafeier/log"
 	"testing"
 	"time"
 	goxorm "xorm.io/xorm"
 )
 
 func init() {
+	log.SetLogLevel(log.DEBUG)
 	LocalDb, err := goxorm.NewEngine("mysql", "test:test@tcp(localhost:3306)/test?charset=utf8mb4")
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 		return
 	}
 	LocalDb.SetMaxIdleConns(10)
@@ -33,7 +34,7 @@ func init() {
 		},
 		&WePayVendorConfig{},
 	}
-	InitWeChatDaemon(true, true, true, nil, LocalDb, config)
+	InitWeChatDaemon(true, true, true, true, nil, LocalDb, config)
 }
 
 func TestGetMicroAppSession(t *testing.T) {
@@ -63,25 +64,21 @@ func TestWePay_UnifiedOrderNative(t *testing.T) {
 }
 
 func TestSendSubscribeMsg(t *testing.T) {
-	ms := Daemon.NewNotifyService()
-	openId := "oSWz25VYk9p5iYGdybEoC8BfHo2k"
-	msg := &SubscribeMsg{
-		TemplateId: "fTlB0J83PtcS5DsfpIjfIAj0Oir6sfV_KOOGQ1UyZME",
-		Page:       "/pages/index/index",
-		Data: &struct {
-			No      map[string]string `json:"character_string2.DATA"`
-			Addtion map[string]string `json:"thing1.DATA"`
-			Remark  map[string]string `json:"thing8.DATA"`
-		}{
-			No:      map[string]string{"value": "test"},
-			Addtion: map[string]string{"value": "test"},
-			Remark:  map[string]string{"value": "test"},
-		},
+	msg := &WxNotifyEntity{}
+	msg.OpenId = "oSWz25VYk9p5iYGdybEoC8BfHo2k"
+	msg.TemplateId = "fTlB0J83PtcS5DsfpIjfIAj0Oir6sfV_KOOGQ1UyZME"
+	msg.Page = "/pages/index/index"
+	msg.Data = map[string]DataItem{
+		"no":      {Value: "test", Color: "#ff00000"},
+		"addtion": {Value: "test", Color: "#ff00000"},
+		"remark":  {Value: "test", Color: "#ff00000"},
 	}
 
-	err := ms.SendSubscribeMsg(openId, msg)
+	err := Daemon.NotifyDaemon.Store(msg)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err.Error())
+		return
 	}
+	time.Sleep(2 * time.Minute)
 
 }

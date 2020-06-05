@@ -14,9 +14,10 @@ type WeChatDaemon struct {
 	AccessTokenServer   *core.DefaultAccessTokenServer
 	CallbackServer      *core.Server
 	DefaultWepayService *WePayService
+	NotifyDaemon        *WxNotifyService
 }
 
-func InitWeChatDaemon(initAccessTokenServer, initCallBackServer, initDefaultWepayService bool, logger ILogger, dbEngine *xorm.Engine, config *Config) {
+func InitWeChatDaemon(initAccessTokenServer, initCallBackServer, initDefaultWepayService, initNotifyDaemon bool, logger ILogger, dbEngine *xorm.Engine, config *Config) {
 
 	if Daemon == nil {
 		Daemon = new(WeChatDaemon)
@@ -28,13 +29,13 @@ func InitWeChatDaemon(initAccessTokenServer, initCallBackServer, initDefaultWepa
 	} else {
 		Daemon.Logger = logger
 	}
-	err := Daemon.Init(initAccessTokenServer, initCallBackServer, initDefaultWepayService)
+	err := Daemon.Init(initAccessTokenServer, initCallBackServer, initDefaultWepayService, initNotifyDaemon)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer, initDefaultWepayService bool) (err error) {
+func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer, initDefaultWepayService bool, initNotifyDaemon bool) (err error) {
 	err = InitDb(self.Engine.NewSession())
 	if err != nil {
 		self.Logger.Error(err)
@@ -64,12 +65,15 @@ func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer, i
 			self.DefaultWepayService.vendor = self.Config.WePayVendorConfig
 		}
 	}
+	if initNotifyDaemon {
+		self.NotifyDaemon = NewWxNotifyService(self.AccessTokenServer, self.Config.WeChatMicroAppConfig, self.Engine.NewSession())
+		go self.NotifyDaemon.Run()
+	}
 	return
 }
 
 func InitDb(db *xorm.Session) (err error) {
-	var tables = []interface{}{&WePaymentEntity{}, &WxUserEntity{}}
-
+	var tables = []interface{}{&WePaymentEntity{}, &WxUserEntity{}, &WxNotifyEntity{}}
 	var isExist bool
 	for _, v := range tables {
 		isExist, err = db.IsTableExist(v)
@@ -105,9 +109,8 @@ func (self *WeChatDaemon) NewPay() *WePayService {
 	pay.vendor = self.Config.WePayVendorConfig
 	return pay
 }
+
+//通知服务
 func (self *WeChatDaemon) NewNotifyService() *WxNotifyService {
-	ms := new(WxNotifyService)
-	ms.AccessTokenServer = self.AccessTokenServer
-	ms.Config = self.Config.WeChatMicroAppConfig
-	return ms
+	return NewWxNotifyService(self.AccessTokenServer, self.Config.WeChatMicroAppConfig, self.Engine.NewSession())
 }

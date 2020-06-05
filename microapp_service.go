@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+// 未看出有什么实际存在的必要，
+// 似乎可以用WechatDaemon代替，
 type MicroappService struct {
 	AccessTokenServer *core.DefaultAccessTokenServer
 	WeChatMicroAppConfig
