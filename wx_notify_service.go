@@ -18,7 +18,7 @@ const (
 	SubscribeMsgSendUrl = "https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=%s"
 )
 
-func NewWxNotifyService(ats *core.DefaultAccessTokenServer, cfg *WeChatMicroAppConfig, session *xorm.Session) *WxNotifyService {
+func NewWxNotifyService(ats core.AccessTokenServer, cfg *WeChatMicroAppConfig, session *xorm.Session) *WxNotifyService {
 	return &WxNotifyService{
 		AccessTokenServer: ats,
 		Config:            cfg,
@@ -30,14 +30,14 @@ func NewWxNotifyService(ats *core.DefaultAccessTokenServer, cfg *WeChatMicroAppC
 
 // 微信通知服务
 type WxNotifyService struct {
-	AccessTokenServer *core.DefaultAccessTokenServer
+	AccessTokenServer core.AccessTokenServer
 	Config            *WeChatMicroAppConfig
 	session           *xorm.Session
 	notifyChannel     chan *WxNotifyEntity //通知通道
 	logMutex          sync.Mutex
 }
 
-//需要作为后台服务运行
+// 需要作为后台服务运行
 func (s *WxNotifyService) Run() {
 	ticket := time.NewTicker(10 * time.Second)
 	for {
@@ -46,7 +46,7 @@ func (s *WxNotifyService) Run() {
 			log.Debug("found mission: %+v", *e)
 			go s.send(e)
 		case <-ticket.C:
-			go s.dispatchMission()
+			//go s.dispatchMission()
 		}
 	}
 }
@@ -73,7 +73,7 @@ func (s *WxNotifyService) dispatchMission() {
 	return
 }
 
-//发送通知
+// 发送通知
 func (s *WxNotifyService) send(e *WxNotifyEntity) {
 	log.Debug("sending...%d", e.Id)
 	msg := new(SubscribeMsg)
@@ -103,7 +103,7 @@ func (s *WxNotifyService) updateLog(e *WxNotifyEntity) (err error) {
 	return
 }
 
-//存储通知
+// 存储通知
 func (s *WxNotifyService) Store(e *WxNotifyEntity) (err error) {
 	s.logMutex.Lock()
 	defer s.logMutex.Unlock()
@@ -117,7 +117,7 @@ func (s *WxNotifyService) Store(e *WxNotifyEntity) (err error) {
 	return
 }
 
-//微信小程序通知消息
+// 微信小程序通知消息
 type SubscribeMsg struct {
 	TemplateId       string              `json:"template_id"`                 //小程序模板ID
 	Data             map[string]DataItem `json:"data,omitempty"`              //小程序模板数据
@@ -134,6 +134,7 @@ func (s *WxNotifyService) sendSubscribeMsg(toOpenId string, msg *SubscribeMsg) e
 		SubscribeMsg: *msg,
 		Touser:       toOpenId,
 	}
+
 	token, err := s.AccessTokenServer.Token()
 	if err != nil {
 		log.Error(err.Error())

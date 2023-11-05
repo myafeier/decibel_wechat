@@ -1,6 +1,9 @@
 package wechat
 
 import (
+	"io/ioutil"
+	"net/http"
+
 	"gopkg.in/chanxuehong/wechat.v2/mp/core"
 	"xorm.io/xorm"
 )
@@ -11,10 +14,49 @@ type WeChatDaemon struct {
 	Config              *Config
 	Logger              ILogger
 	Engine              *xorm.Engine
-	AccessTokenServer   *core.DefaultAccessTokenServer
+	AccessTokenServer   core.AccessTokenServer
 	CallbackServer      *core.Server
 	DefaultWepayService *WePayService
 	NotifyDaemon        *WxNotifyService
+}
+
+type RemoteATS struct {
+	Url string
+}
+
+func (w *RemoteATS) Token() (token string, err error) {
+	resp, err := http.Get(w.Url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	token = string(data)
+	return
+}
+func (w *RemoteATS) RefreshToken(currentToken string) (token string, err error) {
+	resp, err := http.Get(w.Url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	token = string(data)
+	return
+}
+func (w *RemoteATS) IID01332E16DF5011E5A9D5A4DB30FED8E1() { // 接口标识, 没有实际意义
+
+}
+func NewRemoteAccessTokenServer(url string) core.AccessTokenServer {
+	return &RemoteATS{
+		Url: url,
+	}
 }
 
 func InitWeChatDaemon(initAccessTokenServer, initCallBackServer, initDefaultWepayService, initNotifyDaemon bool, logger ILogger, dbEngine *xorm.Engine, config *Config) {
@@ -61,7 +103,7 @@ func (self *WeChatDaemon) Init(initAccessTokenServer bool, initCallBackServer, i
 		self.DefaultWepayService.AppId = self.Config.WeChatMicroAppConfig.AppId
 		self.DefaultWepayService.logger = self.Logger
 		self.DefaultWepayService.config = self.Config.WePayConfig
-		if self.Config.WePayVendorConfig != nil {
+		if self.Config.WePayVendorConfig != nil && self.Config.WePayVendorConfig.MerchantId != "" {
 			self.DefaultWepayService.vendor = self.Config.WePayVendorConfig
 		}
 	}
@@ -99,7 +141,7 @@ func InitDb(db *xorm.Session) (err error) {
 	return
 }
 
-//得到支付接口
+// 得到支付接口
 func (self *WeChatDaemon) NewPay() *WePayService {
 	pay := new(WePayService)
 	pay.db = self.Engine.NewSession()
@@ -110,7 +152,7 @@ func (self *WeChatDaemon) NewPay() *WePayService {
 	return pay
 }
 
-//通知服务
+// 通知服务
 func (self *WeChatDaemon) NewNotifyService() *WxNotifyService {
 	return NewWxNotifyService(self.AccessTokenServer, self.Config.WeChatMicroAppConfig, self.Engine.NewSession())
 }

@@ -24,6 +24,47 @@ type WePayService struct {
 	logger   ILogger
 	mutex    sync.Mutex
 	Watchers map[OrderSource]IPayCallbackWatcher
+	CertData []byte
+	KeyData  []byte
+}
+
+// 发放现金红包
+func (self *WePayService) RedpackSend(orderSource OrderSource, sourceId int64, orderInfo string, amount int64) (codeUrl string, err error) {
+	//url := "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendminiprogramhb"
+	url := "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack"
+	sslClient, err := core.NewTLSHttpClient2(self.CertData, self.KeyData)
+	if err != nil {
+		self.logger.Error(err)
+		return
+	}
+	var client *core.Client
+	if self.vendor == nil {
+		client = core.NewClient(self.AppId, self.config.MerchantId, self.config.MerchantSecret, sslClient)
+	} else {
+		client = core.NewSubMchClient(self.vendor.AppId, self.vendor.MerchantId, self.vendor.MerchantSecret, self.AppId, self.config.MerchantId, sslClient)
+	}
+	reqMap := make(map[string]string)
+	reqMap["mch_billno"] = "123123123"                   //商户订单号
+	reqMap["wxappid"] = "wx7efbb7380e6f5fb2"             //公众账号appid
+	reqMap["msgappid"] = self.AppId                      //公众账号appid
+	reqMap["send_name"] = "测试"                           //商户名称
+	reqMap["re_openid"] = "o8deX5CasiBGbm7xmzD-2Wa6YGkw" //用户openid
+	reqMap["total_amount"] = "1"                         //付款金额
+	reqMap["total_num"] = "1"                            //红包发放总人数
+	reqMap["wishing"] = "祝福"                             //红包祝福语
+	reqMap["act_name"] = "测试活动"                          //活动名称
+	reqMap["remark"] = "收的费"                             //备注
+	reqMap["client_ip"] = "192.168.0.1"                  //备注
+	//reqMap["notify_way"] = "MINI_PROGRAM_JSAPI"          //通知用户形式
+	reqMap["sign_type"] = "MD5"
+	reqMap["sign"] = ""
+	resp, err := client.PostXML(url, reqMap)
+	if err != nil {
+		self.logger.Error(err.Error())
+		return
+	}
+	self.logger.Debug("%+v", resp)
+	return
 }
 
 //原生支付统一下单
@@ -43,7 +84,8 @@ func (self *WePayService) UnifiedOrder_Native(orderSource OrderSource, sourceId 
 	self.logger.Debug(reqMap)
 	self.logger.Debug("%s,%s,%s", self.AppId, self.config.MerchantId, self.config.MerchantSecret)
 	var client *core.Client
-	if self.vendor == nil {
+	if self.vendor == nil || self.vendor.MerchantId == "" {
+		self.logger.Debug("not vendor: ", self.AppId)
 		client = core.NewClient(self.AppId, self.config.MerchantId, self.config.MerchantSecret, nil)
 	} else {
 		client = core.NewSubMchClient(self.vendor.AppId, self.vendor.MerchantId, self.vendor.MerchantSecret, self.AppId, self.config.MerchantId, nil)

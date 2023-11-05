@@ -31,3 +31,12 @@ func (s *WxUserService) InsertOrUpdateUser(user *WxUserEntity) error {
 	}
 	return nil
 }
+
+func (s *WxUserService) Update(user *WxUserEntity, cols ...string) error {
+	_, err := s.session.Where("id=?", user.Id).Cols(cols...).Update(user)
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
+}

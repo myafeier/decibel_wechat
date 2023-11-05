@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gopkg.in/chanxuehong/wechat.v2/mp/core"
 	"io/ioutil"
 	"net/http"
+
+	"gopkg.in/chanxuehong/wechat.v2/mp/core"
 )
 
 // 未看出有什么实际存在的必要，
