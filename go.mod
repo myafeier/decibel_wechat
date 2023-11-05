@@ -10,8 +10,7 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/myafeier/log v1.0.0
 	github.com/stretchr/testify v1.7.1 // indirect
-	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
+	golang.org/x/net v0.17.0 // indirect
 	gopkg.in/chanxuehong/wechat.v2 v2.0.0-20190402080805-fa408c6cc20d
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
